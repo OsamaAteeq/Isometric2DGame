@@ -20,6 +20,8 @@ public class PlayerController : MonoBehaviour
     private Vector2 targetVelocity;         //The max calculated velocity
     private Vector2 currentVelocity = new Vector2(0f, 0f);
 
+    private PlayerState currentState = PlayerState.Idle;
+
     private Vector2 moveInput = new Vector2(0, 0);          //Input fromn the input system
     private Rigidbody2D rb;             //Get from player
     private SpriteRenderer spriteRenderer;  //Set from player
@@ -56,13 +58,13 @@ public class PlayerController : MonoBehaviour
 
         if (targetVelocity != Vector2.zero)
         {
-            animator.SetMoving(true);
+            currentState = PlayerState.Walking;
         }
         else
         {
-            animator.SetMoving(false);
+            currentState = PlayerState.Idle;
         }
-
+        animator.UpdateState(currentState);
     }
 
     private void LateUpdate()

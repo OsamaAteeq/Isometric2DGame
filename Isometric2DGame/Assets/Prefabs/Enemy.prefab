@@ -292,12 +292,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sortingAnchor: {fileID: 3967041064229285315}
-  wayPoints: {fileID: 5291754228009940828}
-  randomFollowPoints: 0
+  wayPointsParent: {fileID: 5291754228009940828}
   target: {fileID: 0}
-  patrolRange: 40
+  patrolRange: 30
+  waitTimeAtPoint: 2
   changePointsAfter: 0
-  currentState: 0
+  randomFollowPoints: 0
+  currentState: 1
 --- !u!195 &4775240953904918289
 NavMeshAgent:
   m_ObjectHideFlags: 0

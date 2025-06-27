@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -9,14 +10,14 @@ public class EnemyController : MonoBehaviour
     [SerializeField]
     private Transform sortingAnchor;        //Used to sort player on top or below
     [SerializeField]
-    private Transform wayPoints;           //WayPoints to follow
-
-    [SerializeField]
-    private bool randomFollowPoints = false;
-
-    [Header("Enemy Behavior")]
+    private Transform wayPointsParent;           //WayPoints to follow
     [SerializeField]
     private Transform target;
+
+
+    [Header("Enemy Behavior")]
+
+
     [Tooltip("Only useful if random follow points is set to true")]
     [SerializeField]
     private float patrolRange = 40f;
@@ -24,21 +25,27 @@ public class EnemyController : MonoBehaviour
     [Tooltip("Time in seconds")]
     [SerializeField]
     private float waitTimeAtPoint = 2f;
+
     [Tooltip("Set to 0 for constant points, time in seconds")]
     [SerializeField]
     private float changePointsAfter = 0f;
 
-    [Tooltip("Set to idle to make completely idle and set to patrol to activate enemy.")]
     [SerializeField]
-    private EnemyState currentState;
+    private bool randomFollowPoints = false;
+    [Tooltip("Set to patrol to follow way points. Idle to just follow target")]
+    [SerializeField]
+    private EnemyState currentState = EnemyState.Idle;
 
-    private List<Vector2> waypointList = new List<Vector2>();
+    private List<Transform> waypointList = new List<Transform>();
     private EnemyState initialState;
     private Vector2 startPosition;
     private NavMeshAgent agent;
     private SpriteRenderer spriteRenderer;  //Set from enemy
     private bool isWaiting = false;
     private int currentWaypointIndex = 0;
+
+    private float stuckTimer = 0f;
+    
 
 
     private void Awake()
@@ -53,21 +60,14 @@ public class EnemyController : MonoBehaviour
     {
         initialState = currentState;
         startPosition = transform.position;
-
-        if (!randomFollowPoints)
-            foreach (Transform t in wayPoints.GetComponentInChildren<Transform>())
-            {
-                waypointList.Add(t.position);
-            }
-        else
+        foreach (Transform t in wayPointsParent.GetComponentInChildren<Transform>())
         {
-            for (int i = 0; i < wayPoints.childCount; i++)
-            {
-                Vector2 randomPoint = Random.insideUnitCircle.normalized;
-                float randomDistance = Random.Range(0f, patrolRange);
-                randomPoint = startPosition + randomPoint * randomDistance;
-                waypointList.Add(randomPoint);
-            }
+            waypointList.Add(t);
+        }
+
+        if (randomFollowPoints)
+        {
+            ChangeWaypoints();
         }
         if (changePointsAfter > 0)
             StartCoroutine(ChangeRepeatedly());
@@ -81,7 +81,7 @@ public class EnemyController : MonoBehaviour
         while (true)
         {
             ChangeWaypoints();
-            yield return new WaitForSeconds(changePointsAfter);
+            yield return new WaitForSeconds(changePointsAfter); //wait after every change
         }
     }
 
@@ -98,6 +98,8 @@ public class EnemyController : MonoBehaviour
             case EnemyState.Patrol:
                 Patrol();
                 break;
+            default:
+                break;
         }
 
     }
@@ -110,24 +112,87 @@ public class EnemyController : MonoBehaviour
     private void Patrol()
     {
         if (isWaiting || waypointList.Count == 0)
+        { }
+        else
         {
-            Vector2 target = waypointList[currentWaypointIndex];
-            bool reached = agent.SetDestination(target);
+            Vector2 target = waypointList[currentWaypointIndex].position;
+            bool assigned = agent.SetDestination(target);
+            bool reached = true;
+            if (assigned)
+            {
+                reached = DestinationReached();
+            }
 
             if (reached)
             {
                 StartCoroutine(WaitAtPoint());
             }
+            else if (CheckAgentStuck())
+            {
+                GoToNextPoint();
+            }
         }
     }
 
-    IEnumerator WaitAtPoint()
+    private bool DestinationReached()
+    {
+        // Still processing path
+        if (agent.pathPending) 
+        {
+            return false;
+        }
+        // Path invalid or destination unreachable
+        if (agent.pathStatus == NavMeshPathStatus.PathInvalid)
+        {
+            Debug.Log("Path unreachable");
+            return true;
+        }
+
+        // Reached destination
+        if (agent.remainingDistance <= agent.stoppingDistance &&
+            (!agent.hasPath || agent.velocity.sqrMagnitude == 0f))
+        { 
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool CheckAgentStuck()
+    {
+        if (!agent.hasPath && agent.pathPending)
+        {
+            stuckTimer += Time.deltaTime;
+
+            if (stuckTimer >= waitTimeAtPoint)
+            {
+                Debug.Log("Agent was stuck for too long. Giving Up");
+                return true;
+            }
+        }
+        else
+        {
+            stuckTimer = 0f;
+        }
+        return false;
+    }
+
+    private bool IsPointOnNavMesh(Vector2 point2D, float maxDistance = 0.5f)
+    {
+        return NavMesh.SamplePosition(point2D, out NavMeshHit hit, maxDistance, NavMesh.AllAreas);
+    }
+
+    private IEnumerator WaitAtPoint()
     {
         isWaiting = true;
         yield return new WaitForSeconds(waitTimeAtPoint);
-
-        currentWaypointIndex = (currentWaypointIndex + 1) % waypointList.Count;
+        GoToNextPoint();
         isWaiting = false;
+    }
+
+    private void GoToNextPoint() 
+    {
+        currentWaypointIndex = (currentWaypointIndex + 1) % waypointList.Count;
     }
 
     public void SetState(EnemyState state)
@@ -146,12 +211,19 @@ public class EnemyController : MonoBehaviour
 
     public void ChangeWaypoints()
     {
-        for (int i = 0; i < waypointList.Count; i++)
+        foreach (Transform t in waypointList)
         {
-            Vector2 randomPoint = Random.insideUnitCircle.normalized;
-            float randomDistance = Random.Range(0f, patrolRange);
-            randomPoint = startPosition + randomPoint * randomDistance;
-            waypointList[i] = randomPoint;
+            Vector2 randomPoint;
+            do
+            {
+                randomPoint = Random.insideUnitCircle.normalized;
+                float randomDistance = Random.Range(0f, patrolRange);
+                randomPoint = startPosition + randomPoint * randomDistance;
+            }
+            while (IsPointOnNavMesh(randomPoint));
+            
+            
+            t.position = randomPoint;
         }
     }
 

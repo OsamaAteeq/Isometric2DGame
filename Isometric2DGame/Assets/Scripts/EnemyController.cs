@@ -167,6 +167,7 @@ public class EnemyController : MonoBehaviour
             if (stuckTimer >= waitTimeAtPoint)
             {
                 Debug.Log("Agent was stuck for too long. Giving Up");
+                stuckTimer = 0;
                 return true;
             }
         }
@@ -220,7 +221,7 @@ public class EnemyController : MonoBehaviour
                 float randomDistance = Random.Range(0f, patrolRange);
                 randomPoint = startPosition + randomPoint * randomDistance;
             }
-            while (IsPointOnNavMesh(randomPoint));
+            while (!IsPointOnNavMesh(randomPoint));
             
             
             t.position = randomPoint;

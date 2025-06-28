@@ -18,7 +18,7 @@ public class EnemyController : MonoBehaviour
     [Header("Enemy Behavior")]
 
 
-    [Tooltip("Only useful if random follow points is set to true")]
+    [Tooltip("Patrol points will be set in this range from the starting location")]
     [SerializeField]
     private float patrolRange = 40f;
 
@@ -31,7 +31,10 @@ public class EnemyController : MonoBehaviour
     private float changePointsAfter = 0f;
 
     [SerializeField]
-    private bool randomFollowPoints = false;
+    private bool startWithrandomFollowPoints = false;
+
+    [SerializeField]
+    private bool randomizeFollowPointsEachPatrol = false;
     [Tooltip("Set to patrol to follow way points. Idle to just follow target")]
     [SerializeField]
     private EnemyState currentState = EnemyState.Idle;
@@ -65,7 +68,7 @@ public class EnemyController : MonoBehaviour
             waypointList.Add(t);
         }
 
-        if (randomFollowPoints)
+        if (startWithrandomFollowPoints)
         {
             ChangeWaypoints();
         }
@@ -199,14 +202,14 @@ public class EnemyController : MonoBehaviour
     public void SetState(EnemyState state)
     {
         currentState = state;
-        if (currentState == EnemyState.Patrol) 
-        {
-            ChangeWaypoints();
-        }
     }
 
     public void ResetState()
     {
+        if (initialState == EnemyState.Patrol && randomizeFollowPointsEachPatrol) 
+        {
+            ChangeWaypoints();
+        }
         SetState(initialState);
     }
 

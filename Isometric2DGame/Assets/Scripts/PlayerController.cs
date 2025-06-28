@@ -4,6 +4,9 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     [SerializeField]
+    private Transform sortingAnchor;        //Used to sort player on top or below
+
+    [SerializeField]
     private float maxSpeed = 5f;
 
     [SerializeField]
@@ -17,8 +20,11 @@ public class PlayerController : MonoBehaviour
     private Vector2 targetVelocity;         //The max calculated velocity
     private Vector2 currentVelocity = new Vector2(0f, 0f);
 
+    private PlayerState currentState = PlayerState.Idle;
+
     private Vector2 moveInput = new Vector2(0, 0);          //Input fromn the input system
     private Rigidbody2D rb;             //Get from player
+    private SpriteRenderer spriteRenderer;  //Set from player
     private PlayerAnimator animator;    //To animate player
 
     private readonly Vector2 isometricUp = new Vector2(1f, 1f);         //Up direction
@@ -27,6 +33,7 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<PlayerAnimator>();
     }
 
@@ -51,12 +58,18 @@ public class PlayerController : MonoBehaviour
 
         if (targetVelocity != Vector2.zero)
         {
-            animator.SetMoving(true);
+            currentState = PlayerState.Walking;
         }
         else
         {
-            animator.SetMoving(false);
+            currentState = PlayerState.Idle;
         }
+        animator.UpdateState(currentState);
+    }
 
+    private void LateUpdate()
+    {
+        Vector3 position = sortingAnchor.position;
+        spriteRenderer.sortingOrder = Mathf.RoundToInt(-position.y * 100);
     }
 }

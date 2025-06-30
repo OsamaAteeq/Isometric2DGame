@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,6 +7,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private Transform sortingAnchor;        //Used to sort player on top or below
 
+    [Header("Movement")]
     [SerializeField]
     private float maxSpeed = 5f;
 
@@ -26,6 +28,10 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rb;             //Get from player
     private SpriteRenderer spriteRenderer;  //Set from player
     private PlayerAnimator animator;    //To animate player
+    private UnityEngine.InputSystem.PlayerInput playerInput;    // To switch from player to UI and back
+
+    private NpcController interactingNpc = null;
+    private InteractionType currentInteractionType = InteractionType.None;
 
     private readonly Vector2 isometricUp = new Vector2(1f, 1f);         //Up direction
     private readonly Vector2 isometricRight = new Vector2(1f, -1f);     //Right direction
@@ -35,6 +41,7 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<PlayerAnimator>();
+        playerInput = GetComponent<UnityEngine.InputSystem.PlayerInput>();
     }
 
     public void OnMove(InputValue value)
@@ -65,6 +72,46 @@ public class PlayerController : MonoBehaviour
             currentState = PlayerState.Idle;
         }
         animator.UpdateState(currentState);
+    }
+
+    public void EnableNPCInteraction(NpcController npc)
+    {
+        interactingNpc = npc;
+        currentInteractionType = InteractionType.StartConversation;
+    }
+
+    public void DisableInteraction()
+    {
+        interactingNpc = null;
+        currentInteractionType = InteractionType.None;
+        ActivatePlayerInput();
+    }
+
+    public void OnInteract(InputValue value)
+    {
+        if (currentInteractionType.Equals(InteractionType.None))
+        {
+
+        }
+        else if (currentInteractionType.Equals(InteractionType.StartConversation) && interactingNpc != null && IsPressed(value))
+        {
+            interactingNpc.StartConversation(this);
+            playerInput.SwitchCurrentActionMap("UI");
+        }
+    }
+
+    public void ActivatePlayerInput() 
+    {
+        playerInput.SwitchCurrentActionMap("Player");
+    }
+
+    private bool IsPressed(InputValue value) 
+    {
+        return !value.isPressed;        //here is pressed is for held (Unity is stupid)
+    }
+    private bool IsHeld(InputValue value)
+    {
+        return value.isPressed;        //here is pressed is for held (Unity is stupid)
     }
 
     private void LateUpdate()

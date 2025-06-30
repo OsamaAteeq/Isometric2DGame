@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -35,6 +36,7 @@ public class UIManager : MonoBehaviour
     private DialogueTree dialogueTree = null;
 
     private PlayerController playerController = null;          //To return to after interactions
+    private NpcController npcController = null;          //To activate interaction after interaction
     private void Awake()
     {
         canvas = GetComponent<Canvas>();
@@ -56,12 +58,17 @@ public class UIManager : MonoBehaviour
     {
         HideInteractionPrompt();
         HideDialogueBox();
-        if (playerController != null) 
+        if (playerController != null)
         {
             playerController.ActivatePlayerInput();
             playerController = null;
         }
-            
+        if (npcController != null) 
+        {
+            npcController.EnableInteractable();
+            npcController = null;
+        }
+
     }
 
     private void HideDialogueBox()
@@ -85,13 +92,21 @@ public class UIManager : MonoBehaviour
         dialogueTransform = transform;
         currentDialogueNode = npcController.currentDialogue;
         dialogueCharacter.text = characterName;
+        dialogueTree = dialogue;
+
         this.playerController = playerController;
+        this.npcController = npcController;
 
         LoadNode();
     }
 
     private void LoadNode() 
     {
+        if (dialogueTree == null || currentDialogueNode == null)
+        {
+            Debug.Log("Dialogue tree missing or null current node");
+            return;
+        }
         Debug.Log("Loading dialogue"+currentDialogueNode.nodeID);
         DestroyAllOptionButtons();
         dialogueText.text = currentDialogueNode.line;
@@ -101,15 +116,17 @@ public class UIManager : MonoBehaviour
             {
                 foreach (DialogueChoice choice in currentDialogueNode.choices)
                 {
+                    DialogueChoice cachedChoice = choice;
                     Button b = Instantiate(optionsButtonPrefab, optionsPanel);
                     TextMeshProUGUI btext = b.GetComponentInChildren<TextMeshProUGUI>();
-                    btext.text = choice.choiceText;
-                    b.onClick.AddListener(() => GoToNextNode(choice));
-                    if (eventSystem != null) 
+                    btext.text = cachedChoice.choiceText;
+                    b.onClick.AddListener(() => GoToNextNode(cachedChoice));
+                    if (eventSystem != null)
                     {
                         eventSystem.SetSelectedGameObject(b.gameObject);
                     }
                 }
+               
             }
             else
             {
@@ -117,11 +134,13 @@ public class UIManager : MonoBehaviour
                 return;
             }
         }
-        else 
+        else
         {
             StopInteraction();
             return;
         }
+
+        //dialogueOffset = dialogueOffset + new Vector3(0, dialoguePanel.sizeDelta.y/2, 0);
         ShowDialogueBox();
     }
 
@@ -129,35 +148,29 @@ public class UIManager : MonoBehaviour
     {
         if (choice != null && choice.nextNodeID != null)
         {
-            Debug.Log("IF 1 TRUE");
             if (choice.nextNodeID.Trim() != "")
             {
                 currentDialogueNode = dialogueTree.GetNodeByID(choice.nextNodeID);
-                Debug.Log("IF 2 TRUE");
             }
             else
             {
-                Debug.Log("ELSE TRUE, STOPPING INTERACTION");
                 StopInteraction();
                 return;
             }
         }
         else
         {
-            Debug.Log("ELSE TRUE, STOPPING INTERACTION");
             StopInteraction();
             return;
         }
 
         if (currentDialogueNode == null)
         {
-            Debug.Log("IF 3 TRUE, STOPPING INTERACTION");
             StopInteraction();
             return;
         }
         else
         {
-            Debug.Log("ELSE TRUE, LOADING NODE");
             LoadNode();
         }
     }
@@ -171,13 +184,20 @@ public class UIManager : MonoBehaviour
     }
     private void DestroyAllOptionButtons() 
     {
-        if (eventSystem != null) 
         {
-            eventSystem.SetSelectedGameObject(null);
-        }
-        while (optionsPanel.childCount > 0)
-        {
-            DestroyImmediate(optionsPanel.GetChild(0).gameObject);
+            if (eventSystem != null)
+                eventSystem.SetSelectedGameObject(null);
+            List<Transform> children = new List<Transform>();
+            for (int i = 0; i < optionsPanel.childCount; i++)
+                children.Add(optionsPanel.GetChild(i));
+            foreach (Transform child in children)
+            {
+                Button btn = child.GetComponent<Button>();
+                if (btn != null)
+                    btn.onClick.RemoveAllListeners();
+                child.gameObject.SetActive(false);
+                Destroy(child.gameObject);
+            }
         }
     }
 

@@ -27,7 +27,7 @@ public class InteractionTrigger : MonoBehaviour
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.Equals(activeInteraction))
+        if (activeInteraction != null && collision.Equals(activeInteraction))
         {
             GameManager.Instance.UIManager.StopInteraction();
             playerController.DisableInteraction();

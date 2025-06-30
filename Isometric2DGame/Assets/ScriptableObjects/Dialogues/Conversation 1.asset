@@ -17,5 +17,12 @@ MonoBehaviour:
   - nodeID: 0
     line: Hello World !
     choices:
+    - choiceText: Next
+      nextNodeID: 1
+  - nodeID: 1
+    line: Welcome to this very long message. I have nothing to say but think of this
+      as the "lorem ipsum" stuff. Lorem Ipsum Don't know what comes next hopefully
+      this will do the trick.
+    choices:
     - choiceText: Continue
       nextNodeID: 

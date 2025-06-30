@@ -2,7 +2,7 @@
 RunicDicesTask
 
 This project is to show case that an applicant can do ~basic~ tasks in Unity (I am the applicant :D)
-Features includes all tasks plus bonuses that I implemented (I may have missed something, but I don't think I have)
+Features includes all tasks plus bonuses that I implemented (I may have missed to mention something, but I don't think I have)
 
 # Features
 Task 2

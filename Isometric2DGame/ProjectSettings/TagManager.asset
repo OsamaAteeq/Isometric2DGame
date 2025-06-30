@@ -3,7 +3,8 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - NPC
   layers:
   - Default
   - TransparentFX
@@ -49,6 +50,9 @@ TagManager:
     locked: 0
   - name: Movables
     uniqueID: 3222745807
+    locked: 0
+  - name: UI
+    uniqueID: 1329512689
     locked: 0
   m_RenderingLayers:
   - Default

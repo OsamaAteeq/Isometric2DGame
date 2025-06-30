@@ -10,14 +10,14 @@ public class AttackTrigger : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.tag.Equals("Player")) 
+        if (collision.CompareTag("Player")) 
         {
             enemyController.SetState(EnemyState.Attack);
         }
     }
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.tag.Equals("Player"))
+        if (collision.CompareTag("Player"))
         {
             enemyController.SetState(EnemyState.Chase);
         }

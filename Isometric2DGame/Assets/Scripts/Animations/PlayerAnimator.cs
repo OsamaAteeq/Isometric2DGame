@@ -16,6 +16,8 @@ public class PlayerAnimator : MonoBehaviour
     private bool isMoving;
     private Color startColor;
     private SpriteRenderer spriteRenderer;
+    private Vector3 originalScale;
+
 
     private void Awake()
     {
@@ -25,6 +27,7 @@ public class PlayerAnimator : MonoBehaviour
 
     private void Start()
     {
+        originalScale = transform.localScale;
         PlayIdlePulse();
     }
 
@@ -42,7 +45,7 @@ public class PlayerAnimator : MonoBehaviour
 
     private void SetMoving(bool isMoving = true)
     {
-        if (isMoving)
+        if (!isMoving)
         {
             PlayColorChange(startColor);
             this.isMoving = isMoving;
@@ -51,6 +54,7 @@ public class PlayerAnimator : MonoBehaviour
         else
         {
             this.isMoving = isMoving;
+            transform.localScale = originalScale;
             PlayColorChange(Color.green);
         }
     }
@@ -83,11 +87,10 @@ public class PlayerAnimator : MonoBehaviour
 
     private IEnumerator PulseScale()
     {
-        Vector3 original = transform.localScale;
         while (!isMoving)
         {
             float t = (Mathf.Sin(Time.time * pulseSpeed) * pulseStrength);
-            transform.localScale = original + new Vector3(t, t, 0);
+            transform.localScale = originalScale + new Vector3(t, t, 0);
             yield return null;
         }
     }

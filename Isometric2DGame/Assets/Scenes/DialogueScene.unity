@@ -580,13 +580,17 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 418481550962026686, guid: 69eaf8beb91632a429cb66e1525a91c2, type: 3}
+      propertyPath: npcName
+      value: Crazy?
+      objectReference: {fileID: 0}
+    - target: {fileID: 418481550962026686, guid: 69eaf8beb91632a429cb66e1525a91c2, type: 3}
       propertyPath: Dialogue
       value: 
       objectReference: {fileID: 11400000, guid: 20c9b5f290b7ffe4ea374d1640eb0d19, type: 2}
     - target: {fileID: 418481550962026686, guid: 69eaf8beb91632a429cb66e1525a91c2, type: 3}
       propertyPath: dialogue
       value: 
-      objectReference: {fileID: 11400000, guid: 26e38f048c2216e448e9c05c526167cd, type: 2}
+      objectReference: {fileID: 11400000, guid: db2351183a5b8ba4b9b2c00cc911d950, type: 2}
     - target: {fileID: 418481550962026686, guid: 69eaf8beb91632a429cb66e1525a91c2, type: 3}
       propertyPath: sortingAnchor
       value: 
@@ -2395,6 +2399,7 @@ MonoBehaviour:
   dialogueText: {fileID: 1561289935}
   optionsPanel: {fileID: 1123166506}
   optionsButtonPrefab: {fileID: 7190942791386209929, guid: e78d5b0d4282bb546b05080be80f3cfb, type: 3}
+  defaultChoiceText: Continue
 --- !u!114 &1838503259
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3028,7 +3033,7 @@ PrefabInstance:
     - target: {fileID: 418481550962026686, guid: 69eaf8beb91632a429cb66e1525a91c2, type: 3}
       propertyPath: dialogue
       value: 
-      objectReference: {fileID: 11400000, guid: 20c9b5f290b7ffe4ea374d1640eb0d19, type: 2}
+      objectReference: {fileID: 11400000, guid: a3073a9cf13724445b53ed28e0fa4240, type: 2}
     - target: {fileID: 418481550962026686, guid: 69eaf8beb91632a429cb66e1525a91c2, type: 3}
       propertyPath: sortingAnchor
       value: 

@@ -10,7 +10,7 @@ public class NpcController : MonoBehaviour
     [SerializeField]
     private string npcName = "Traveler";
     [SerializeField]
-    private DialogueTree dialogue;
+    private DialogueGraph dialogue;
 
     private UIManager uiManager;
     private SpriteRenderer spriteRenderer;
@@ -23,7 +23,7 @@ public class NpcController : MonoBehaviour
         uiManager = GameManager.Instance.UIManager;
         if (dialogue != null)
         {
-            currentDialogue = dialogue.GetNodeByID(dialogue.entryNodeID);
+            currentDialogue = dialogue.entryNode;
         }
     }
 

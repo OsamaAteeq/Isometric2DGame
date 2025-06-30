@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using XNode;
 
 public class UIManager : MonoBehaviour
 {
@@ -24,6 +26,9 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private Button optionsButtonPrefab;
 
+    [SerializeField]
+    private string defaultChoiceText = "Continue";
+
 
     private Canvas canvas;
     private Transform interactionTransform = null;
@@ -33,7 +38,7 @@ public class UIManager : MonoBehaviour
     private Vector3 dialogueOffset = Vector3.zero;
     private DialogueNode currentDialogueNode = null;
 
-    private DialogueTree dialogueTree = null;
+    private DialogueGraph dialogueTree = null;
 
     private PlayerController playerController = null;          //To return to after interactions
     private NpcController npcController = null;          //To activate interaction after interaction
@@ -86,7 +91,7 @@ public class UIManager : MonoBehaviour
     }
 
 
-    public void ManageConversation(NpcController npcController, PlayerController playerController, Transform transform, Vector3 offset, string characterName, DialogueTree dialogue)
+    public void ManageConversation(NpcController npcController, PlayerController playerController, Transform transform, Vector3 offset, string characterName, DialogueGraph dialogue)
     {
         HideInteractionPrompt();
         dialogueOffset = offset;
@@ -105,10 +110,10 @@ public class UIManager : MonoBehaviour
     {
         if (dialogueTree == null || currentDialogueNode == null)
         {
-            Debug.Log("Dialogue tree missing or null current node");
+            Debug.Log("Dialogue graph missing or null current node");
             return;
         }
-        Debug.Log("Loading dialogue"+currentDialogueNode.nodeID);
+        Debug.Log("Loading dialogue"+currentDialogueNode.ToString());
         DestroyAllOptionButtons();
         dialogueText.text = currentDialogueNode.line;
         if (currentDialogueNode.choices != null)
@@ -118,62 +123,65 @@ public class UIManager : MonoBehaviour
                 foreach (DialogueChoice choice in currentDialogueNode.choices)
                 {
                     DialogueChoice cachedChoice = choice;
-                    Button b = Instantiate(optionsButtonPrefab, optionsPanel);
-                    TextMeshProUGUI btext = b.GetComponentInChildren<TextMeshProUGUI>();
-                    btext.text = cachedChoice.choiceText;
-                    b.onClick.AddListener(() => GoToNextNode(cachedChoice));
-                    if (eventSystem != null)
-                    {
-                        eventSystem.SetSelectedGameObject(b.gameObject);
-                    }
+                    CreateButton(cachedChoice);
                 }
                
             }
             else
             {
-                StopInteraction();
-                return;
+                CreateButton();
             }
         }
         else
         {
-            StopInteraction();
-            return;
+            CreateButton();
         }
 
         //dialogueOffset = dialogueOffset + new Vector3(0, dialoguePanel.sizeDelta.y/2, 0);
         ShowDialogueBox();
     }
 
-    private void GoToNextNode(DialogueChoice choice)
+    private void CreateButton(DialogueChoice choice = null) 
     {
-        if (choice != null && choice.nextNodeID != null)
+        string text = defaultChoiceText;
+        if (choice != null)
         {
-            if (choice.nextNodeID.Trim() != "")
-            {
-                currentDialogueNode = dialogueTree.GetNodeByID(choice.nextNodeID);
-            }
-            else
-            {
-                StopInteraction();
-                return;
-            }
+            text = choice.choiceText;
         }
-        else
+        Button b = Instantiate(optionsButtonPrefab, optionsPanel);
+        TextMeshProUGUI btext = b.GetComponentInChildren<TextMeshProUGUI>();
+        btext.text = text;
+        b.onClick.AddListener(() => GoToNextNode(choice));
+        if (eventSystem != null)
+        {
+            eventSystem.SetSelectedGameObject(b.gameObject);
+        }
+    }
+
+    private void GoToNextNode(DialogueChoice choice = null)
+    {
+
+        if (choice == null)
         {
             StopInteraction();
             return;
         }
 
+        NodePort next = currentDialogueNode.GetChoicePort(choice);
+        if (next == null || next.node == null)
+        {
+            StopInteraction();
+            return;
+        }
+
+        currentDialogueNode = next.node as DialogueNode;
         if (currentDialogueNode == null)
         {
             StopInteraction();
             return;
         }
-        else
-        {
-            LoadNode();
-        }
+        LoadNode();
+
     }
 
     private void ShowDialogueBox() 

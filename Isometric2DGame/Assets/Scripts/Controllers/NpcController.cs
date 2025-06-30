@@ -29,14 +29,14 @@ public class NpcController : MonoBehaviour
 
     public void EnableInteractable()
     {
-        uiManager.ShowInteractionPrompt($"Press {GameManager.Instance.GetKeyFor("Interact")} to talk", spriteRenderer.transform, new Vector3(0f, spriteRenderer.size.y, 0f));
+        uiManager.ShowInteractionPrompt($"Press {GameManager.Instance.GetKeyFor("Interact")} to talk", transform, new Vector3(0f, spriteRenderer.size.y, 0f));
     }
 
     public void StartConversation(PlayerController playerController)
     {
         if (dialogue != null)
         {
-            uiManager.ManageConversation(this, playerController, spriteRenderer.transform, new Vector3(0f, spriteRenderer.size.y, 0f), npcName, dialogue);
+            uiManager.ManageConversation(this, playerController, transform, new Vector3(0f, spriteRenderer.size.y, 0f), npcName, dialogue);
         }
         else
         {

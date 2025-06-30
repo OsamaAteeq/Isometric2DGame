@@ -51,6 +51,7 @@ public class UIManager : MonoBehaviour
         interactionOffset = offset;
         interactionTransform = transform;
         interactText.text = message;
+        interactText.transform.position = interactionTransform.position + interactionOffset;
         interactText.gameObject.SetActive(true);
     }
 
@@ -179,6 +180,7 @@ public class UIManager : MonoBehaviour
     {
         if (dialoguePanel.gameObject.activeInHierarchy == false)
         {
+            dialoguePanel.transform.position = dialogueTransform.position + dialogueOffset;
             dialoguePanel.gameObject.SetActive(true);
         }
     }

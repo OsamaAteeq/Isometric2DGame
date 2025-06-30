@@ -28,15 +28,27 @@ public class PlayerAnimator : MonoBehaviour
         PlayIdlePulse();
     }
 
-    public void SetMoving(bool isMoving)
+    public void UpdateState(PlayerState state) 
     {
-        if (this.isMoving && !isMoving)
+        if (!isMoving && state.Equals(PlayerState.Walking))
+        {
+            SetMoving();
+        }
+        else if (isMoving && state.Equals(PlayerState.Idle)) 
+        {
+            SetMoving(false);
+        }
+    }
+
+    private void SetMoving(bool isMoving = true)
+    {
+        if (isMoving)
         {
             PlayColorChange(startColor);
             this.isMoving = isMoving;
             PlayIdlePulse();
         }
-        else if (!this.isMoving && isMoving)
+        else
         {
             this.isMoving = isMoving;
             PlayColorChange(Color.green);
